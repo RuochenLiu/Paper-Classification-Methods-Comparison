@@ -4,7 +4,7 @@
 
 Term: Spring 2017
 
-+ Team #
++ Team 14
 + Projec title: Lorem ipsum dolor sit amet
 + Team members
 	+ Liu, Ruochen rl2841@columbia.edu
