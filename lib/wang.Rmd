@@ -1,0 +1,98 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+#step0: load packages and specify directories
+```{r}
+setwd("/Users/ouminamikun/Documents/Columbia/Spring 2017/ADS/Spr2017-proj4-team-14/data/nameset")
+
+```
+
+#step1: load and process data
+```{r}
+AKumar <- data.frame(scan("AKumar.txt",
+                          what = list(Coauthor = "", Paper = "", Journal = ""),
+                          sep=">", quiet=TRUE), stringsAsFactors=F)
+AKumar$clusterid <- sub("_.*","",AKumar$Coauthor)
+AKumar$citationid <- sub(".*_(\\w*)\\s.*", "\\1", AKumar$Coauthor)
+AKumar$coauthor <- gsub("<","",sub("^.*?\\s","", AKumar$Coauthor))
+AKumar$Paper <- gsub("<","",AKumar$Paper)
+AKumar$index <- rownames(AKumar)
+```
+
+```{r}
+###################################### J Smith #################################
+JSmith <- data.frame(scan("JSmith.txt",
+                          what = list(coauthor ="", paper = "", publication =""),
+                          sep = ">", quiet = T),stringsAsFactors = F)
+JSmith$authors <- gsub("<","",sub("^.*?\\s","", JSmith$coauthor))
+JSmith$clusterid <- sub("_.*","",JSmith$coauthor)
+```
+
+```{r}
+authors <- strsplit(JSmith$authors, ";")
+authors
+
+##authors name frequencies table
+c_authors <- c(authors[[1]],authors[[2]])
+for(i in 3:length(authors)){
+   c_authors<- c(c_authors, authors[[i]])
+}
+c_authors <- as.data.frame(sort(table(c_authors)))
+c_authors
+
+##number of authors for each citation
+num_authors <- NA
+for(i in 1:length(authors)){
+  num_authors[i] <- length(authors[[i]])
+}
+JSmith$num_authors <- num_authors
+
+clusterid_index <- unique(JSmith$clusterid)
+```
+
+
+```{r}
+##No.10 J Smith
+index <- JSmith$clusterid == clusterid_index[1]
+p_id10 <- mean(index)
+p_id10
+
+#the prob of Xi writing a futrue paper alone conditioned on the event of Xi
+p_N <- mean(JSmith$num_authors[index]==1)
+p_co <- 1-p_N
+```
+
+```{r}
+##authors name frequecies table
+freq_authors_id10 <- c(authors_id10[[1]],authors_id10[[2]])
+for(i in 3:length(authors_id10)){
+   freq_authors_id10 <- c(freq_authors_id10, authors_id10[[i]])
+}
+
+freq_authors_id10 <- as.data.frame(sort(table(freq_authors_id10)))
+colnames(freq_authors_id10) <- c("authors", "frequencies")
+
+#the prob of Xi writing a futre paper with previously seen coauthors condiitoned on the event that Xi writes a futre paper with coauthors
+authors_id10 <- authors[index]
+authors_id10
+sum(JSmith$num_authors[index] - 1) #total number of times Xi coauthors with any coauthor
+p_seen_co <- (sum(c_authors_id10$Freq >= 2) - 1) / sum(JSmith$num_authors[index] - 1)
+p_seen_co
+p_unseen_co <- 1 - p_seen_co
+
+```
+
+```{r}
+#the prob of Xi writing a future paper with a particular coauthor A1k conditioned on the event that X1 writes a paper with a previously seen coauthors
+p_A1k_seen_co <- freq_authors_id10[freq_authors_id10$authors == "Terence C Fogarty", "frequencies"]/sum(JSmith$num_authors[index] - 1)
+p_A1k_seen_co 
+p_A1k_unseen_co <- 1 - p_A1k_seen_co
+```
+
+```{r}
+p_A1 <- p_A1k_seen_co*p_seen_co*p_co + p_A1k_unseen_co*p_unseen_co*p_co
+p_A1
+p_A1*p_id10
+```
