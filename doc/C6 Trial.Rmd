@@ -6,12 +6,35 @@ output: html_document
 ---
 
 ```{r}
+
+#### Get M Matrix for each dataset
+
 source("../lib/M.R")
 load("../output/CleanData.RData")
-n <- length(data_list)
-M <- data_list
+load("../output/M.RData")
+#K <- length(data_list)
+#M <- data_list
+#for(i in 1:K){
+#  M[[i]] <- M6(data_list[[i]])
+#  cat(i, " Completed ", K-i, " Left", sep = "")
+#}
+#save(M, file = "../output/M.RData")
+```
+
+```{r}
+
+#### Iteration Function
+
+d <- data_list[[1]]
+m <- M[[1]]
+n <- length(d) #### Number of publications
+label <- vector("numeric", length = n) #### Save true assignments.
 for(i in 1:n){
-  M[[i]] <- M6(data_list[[i]])
+  label[i] <- d[[i]][[1]]
 }
-save(M, file = "../output/M.RData")
+k <- length(unique(label)) #### Number of clusters.
+
+
+
+
 ```
