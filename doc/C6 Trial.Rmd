@@ -6,33 +6,57 @@ output: html_document
 ---
 
 ```{r}
-
 #### Get M Matrix for each dataset
-
-source("../lib/M.R")
-load("../output/CleanData.RData")
-load("../output/M.RData")
 #K <- length(data_list)
 #M <- data_list
 #for(i in 1:K){
 #  M[[i]] <- M6(data_list[[i]])
 #  cat(i, " Completed ", K-i, " Left", sep = "")
 #}
-#save(M, file = "../output/M.RData")
+#M.Matrix <- M
+#names(M.Matrix) <- names(data_list)
+#save(M.Matrix, file = "../output/M.RData")
+
 ```
 
 ```{r}
+require("pacman")
+source("../lib/M.R")
+load("../output/CleanData.RData")
+load("../output/M.RData")
 
-#### Iteration Function
+#### Get Features
 
-d <- data_list[[1]]
-m <- M[[1]]
+d <- data_list[[2]]
+M <- M.Matrix[[2]]
 n <- length(d) #### Number of publications
+paper <- vector("character", length = n)
+for(i in 1:n){
+  paper[i] <- d[[i]][[5]]
+}
+
+it_train <- itoken(paper, 
+             preprocessor = tolower, 
+             tokenizer = word_tokenizer,
+             # turn off progressbar because it won't look nice in rmd
+             progressbar = FALSE)
+vocab <- create_vocabulary(it_train, stopwords = c("a", "an", "the", "in", "on",
+                                                   "at", "of", "above", "under"))
+vectorizer <- vocab_vectorizer(vocab)
+dtm_train <- create_dtm(it_train, vectorizer)
+dim(dtm_train)
+tfidf <- TfIdf$new()
+train.data <- as.matrix(fit_transform(dtm_train, tfidf))
+
 label <- vector("numeric", length = n) #### Save true assignments.
 for(i in 1:n){
   label[i] <- d[[i]][[1]]
 }
 k <- length(unique(label)) #### Number of clusters.
+
+#### Train
+
+
 
 
 
