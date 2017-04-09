@@ -24,22 +24,18 @@ names(data_list) <- query.list
 
 s <- function(z) { return(strsplit(z, split = " ")) }
 
-# read in Journal name
-#a <- paste(AKumar$Journal, collapse = " ")
-# a = tolower(a) #make it lower case
-# a = gsub('[[:punct:]]', '', a)
-# a <- strsplit(a, split = " ")
-# n <- length(a[[1]])
-# n
-
-dic <- Corpus(VectorSource(AKumar$Journal))
-dic <- tm_map(dic, content_transformer(tolower))
-dic <- tm_map(dic, removePunctuation)
-dic <- tm_map(dic, removeWords, stopwords("english"))
-dic <- lapply(dic, s)
-dic <- unlist(dic)
-dic <- sort(table(dic), decreasing = T)
-dic <- dic[-1]
+word.infor <- function(df) {
+  dic <- Corpus(VectorSource(df$Journal))
+  dic <- tm_map(dic, content_transformer(tolower))
+  dic <- tm_map(dic, removePunctuation)
+  dic <- tm_map(dic, removeWords, stopwords("english"))
+  dic <- lapply(dic, s)
+  dic <- unlist(dic)
+  dic <- sort(table(dic), decreasing = T)
+  dic <- dic[-1]
+  return(dic)
+}
+dic <- word.infor(AKumar)
 all <- sum(dic)
 dic <- names(dic)
 
@@ -64,14 +60,7 @@ find_loc <- function(input) {
 prior_p <- function(j, df) {
   author <- sort(unique(df$clusterid))
   subdata <- subset(df, clusterid == author[j])
-  subdic <- Corpus(VectorSource(subdata$Journal))
-  subdic <- tm_map(subdic, content_transformer(tolower))
-  subdic <- tm_map(subdic, removePunctuation)
-  subdic <- tm_map(subdic, removeWords, stopwords("english"))
-  subdic <- lapply(subdic, s)
-  subdic <- unlist(subdic)
-  subdic <- sort(table(subdic), decreasing = T)
-  subdic <- subdic[-1]
+  subdic <- word.infor(subdata)
   # probability of the author publish a paper on a journal with a seen word in the journal title
   p.title.seen <- sum(subdic[subdic >= 2]) / sum(subdic)
   # probability of the author publish a paper on a journal with a unseen word in the journal title
