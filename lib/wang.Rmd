@@ -115,8 +115,6 @@ which(JSmith_features[2,] == 1)
 JSmith_features_id <- unique(JSmith_features[,1])
 
 JSmith_features_id
-
-
 ```
 
 #Construct coauthors matrix
@@ -146,6 +144,63 @@ for(i in 1:14){
   labels[[i]] <- as.matrix(labels[[i]])
   coauthors[[i]] <- cbind(labels[[i]],M[[i]][1:obs, (obs+1) : d])
   coauthors[[i]] <- cbind(coauthors[[i]], rep(1,obs))
+}
+```
+
+#split data function
+```{r}
+
+split_data <- function(m){
+    #input m = one class of one nameset
+    obs <- nrow(m)
+    index <- sample(1:obs,round(obs/2))
+    train_data <- m[index,]
+    test_data <- m[-index,]
+  return(list(train_data = train_data, test_data = test_data))
+}
+```
+
+#Split data into train and test data and store them as cvs files
+```{r}
+###split every class in a nameset and for loop 14 namesets
+s <- NULL
+ss <- NULL
+for(i in 1:14){
+  s[[i]] <- split(as.data.frame(coauthors[[i]]), coauthors[[i]][,1])
+  ss[[i]] <- lapply(s[[i]], split_data)
+}
+
+###combine train data of every class and for loop 14 namesets
+train <- NULL
+for(i in 1:14){
+  n <- length(ss[[i]])
+  train[[i]] <- ss[[i]][[1]]$train_data
+  for(j in 2:n){
+    train[[i]] <- rbind(train[[i]], ss[[i]][[j]]$train_data)
+  }
+}
+
+for(i in 1:14){
+  train_data_frame <- train[[i]]
+  file_name <- paste("train_",i,".csv" ,sep = "")
+  write.csv(train_data_frame, paste("/Users/ouminamikun/Documents/Columbia/Spring 2017/ADS/Spr2017-proj4-team-14/output/Exp10/", file_name,sep = ""), row.names = F)
+}
+
+
+###combine test data of every class and for loop 14 namesets
+test <- NULL
+for(i in 1:14){
+  n <- length(ss[[i]])
+  test[[i]] <- ss[[i]][[1]]$test_data
+  for(j in 2:n){
+    test[[i]] <- rbind(test[[i]], ss[[i]][[j]]$test_data)
+  }
+}
+
+for(i in 1:14){
+  test_data_frame <- test[[i]]
+  file_name <- paste("test_",i,".csv" ,sep = "")
+  write.csv(test_data_frame, paste("/Users/ouminamikun/Documents/Columbia/Spring 2017/ADS/Spr2017-proj4-team-14/output/Exp10/", file_name,sep = ""), row.names = F)
 }
 ```
 
@@ -202,13 +257,12 @@ nb_train <- function(train_x, train_y){
 }
 
 
-class(coauthors[[8]]) <- "numeric"
-train_x <- coauthors[[8]][,-1]
-train_y <- as.numeric(factor(coauthors[[8]][,1], levels=c(1:30)))
-
+train_x <- as.matrix(train_1[,-1])
+train_y <- train_1[,1]
 model <- nb_train(train_x = train_x, train_y = train_y)
 model
 ```
+
 #test function
 ```{r}
 nb_test <- function(model, test_data){
@@ -236,7 +290,35 @@ nb_test <- function(model, test_data){
   return(prediction = class)
 } 
 
-pp <- nb_test(model = model, test_data = train_x)
+pp <- nb_test(model = model, test_data = test_1[,-1])
+mean(pp == test_1[,1])
+```
 
+#conduct 10 experiments on the first nameset
+```{r}
+train_files <- NULL
+for(i in 1:10){
+  file_dir <- paste("/Users/ouminamikun/Documents/Columbia/Spring 2017/ADS/Spr2017-proj4-team-14/output/Exp",i,"/train_1.csv",sep = "")
+  train_files[[i]] <- read.csv(file_dir, header = T)
+}
+
+test_files <- NULL
+for(i in 1:10){
+  file_dir <- paste("/Users/ouminamikun/Documents/Columbia/Spring 2017/ADS/Spr2017-proj4-team-14/output/Exp",i,"/test_1.csv",sep = "")
+  test_files[[i]] <- read.csv(file_dir, header = T)
+}
+
+model <- NULL
+prediction <- NULL
+accuracy <- NA
+for(i in 1:10){
+  train_x <- as.matrix(train_files[[i]][,-1])
+  train_y <- train_files[[i]][,1]
+  model[[i]] <- nb_train(train_x, train_y)
+  prediction[[i]] <- nb_test(model[[i]], test_files[[i]][,-1])
+  accuracy[i] <- mean(prediction[[i]] == test_files[[i]][,1])
+}
+mean(accuracy)
+sd(accuracy)
 ```
 
