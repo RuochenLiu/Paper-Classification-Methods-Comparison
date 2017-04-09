@@ -17,21 +17,20 @@ AKumar$coauthor <- gsub("<","",sub("^.*?\\s","", AKumar$Coauthor))
 AKumar$Paper <- gsub("<","",AKumar$Paper)
 
 
-# unique(AKumar$Journal)
-# length(AKumar$Journal)
+attach("CleanData.RData")
+data.files <- list.files(path = data.lib, "*.txt")
+query.list <- substring(data.files, 1, nchar(data.files)-4)
+names(data_list) <- query.list
 
+s <- function(z) { return(strsplit(z, split = " ")) }
 
 # read in Journal name
-a <- paste(AKumar$Journal, collapse = " ")
+#a <- paste(AKumar$Journal, collapse = " ")
 # a = tolower(a) #make it lower case
 # a = gsub('[[:punct:]]', '', a)
 # a <- strsplit(a, split = " ")
 # n <- length(a[[1]])
 # n
-
-
-
-s <- function(z) { return(strsplit(z, split = " ")) }
 
 dic <- Corpus(VectorSource(AKumar$Journal))
 dic <- tm_map(dic, content_transformer(tolower))
