@@ -1,6 +1,18 @@
 library("NLP")
 library("tm")
 
+# read in a new datasset
+read.data <- function(input) {
+  df <- paste(data.lib, input, sep="/")
+  df <- data.frame(scan(df, what = list(Coauthor = "", Paper = "", Journal = ""),
+                        sep=">", quiet=TRUE), stringsAsFactors=F)
+  df$clusterid <- sub("_.*","",df$Coauthor) # author_id
+  df$citationid <- sub(".*_(\\w*)\\s.*", "\\1", df$Coauthor) # paper_id
+  df$coauthor <- gsub("<","",sub("^.*?\\s","", df$Coauthor))
+  df$Paper <- gsub("<","",df$Paper)
+  return(df)
+}
+
 # decompose a string into words
 dec <- function(z) {
   return(strsplit(z, split = " "))
@@ -43,6 +55,18 @@ prior_p <- function(j, df) {
   # probability of the author publish a paper on a journal with kth word condition on the jornal name has a unseen word
   p.word.unseen <- 1 / (all)
   output <- c(p.title.seen, p.title.unseen, p.word.seen, p.word.unseen)
+  return(output)
+}
+
+# split data
+split_data <- function(df){
+  #input: m = one class of one nameset
+  #output: train and test dataset
+  obs <- 1:nrow(df)
+  index <- sample(1:nrow(df), round(nrow(df)/2))
+  train_data <- obs[index]
+  test_data <- obs[-index]
+  output <- list(train_data = train_data, test_data = test_data)
   return(output)
 }
 
