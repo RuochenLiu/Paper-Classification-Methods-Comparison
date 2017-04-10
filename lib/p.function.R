@@ -27,7 +27,7 @@ word.infor <- function(df) {
   dic <- lapply(dic, dec)
   dic <- unlist(dic)
   dic <- sort(table(dic), decreasing = T)
-  if ("" %in% names(dic)) { dic <- dic[-1]}
+  if ("" %in% names(dic)) { dic <- dic[-which(names(dic) == "")]}
   return(dic)
 }
 
@@ -42,8 +42,7 @@ find_loc <- function(input) {
 }
 
 # prior probability to each author in dataset
-prior_p <- function(j, df) {
-  author <- sort(unique(df$clusterid))
+prior.author.p <- function(j, df) {
   subdata <- subset(df, clusterid == author[j])
   subdic <- word.infor(subdata)
   # probability of the author publish a paper on a journal with a seen word in the journal title
@@ -73,18 +72,18 @@ split_data <- function(df){
 # train function
 p.journal <- function(df, total_df) {
   # the total word dictionary
-  dic <<- word.infor(total_df)
+  dic <- word.infor(total_df)
   n.all <<- sum(dic)
-  dic <- names(dic)
-  author <- sort(unique(df$clusterid))
-  K <- length(author)
+  dic <<- names(dic)
+  author <<- sort(unique(total_df$clusterid))
+  K <<- length(author)
   L <<- length(dic)
   q <- matrix(1:K, ncol = 1)
-  prior.dic <- apply(q, 1, prior_p, df)
+  prior.dic <- apply(q, 1, prior.author.p, df)
   prior.author <- table(df$clusterid) / length(df$clusterid)
   output <- rbind(prior.dic, prior.author)
   colnames(output) <- author
-  row.names(output) <- c("p.title.seen", "p.title.unseen", dic, "p.word.unseen", "prior.author")
+  row.names(output) <- c("p.title.seen", "p.title.unseen", names(dic), "p.word.unseen", "prior.author")
   return(output)
 }
 
