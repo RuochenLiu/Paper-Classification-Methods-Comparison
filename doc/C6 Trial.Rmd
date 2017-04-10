@@ -47,7 +47,7 @@ dtm_train <- create_dtm(it_train, vectorizer)
 dim(dtm_train)
 tfidf <- TfIdf$new()
 train.data <- as.matrix(fit_transform(dtm_train, tfidf)) #### Get train data features.
-# d <- train.data
+# data.train <- train.data
 t <- 3
 label <- vector("numeric", length = n) #### Save true assignments.
 for(i in 1:n){

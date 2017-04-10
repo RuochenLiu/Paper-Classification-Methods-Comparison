@@ -26,7 +26,7 @@ Train <- function(data.train, M, k, t){
   
   #### Initial assignments (l1)
   
-  label2
+  label2 <- sample(1:k, n, replace =  TRUE)
   
   
   
@@ -42,7 +42,7 @@ Train <- function(data.train, M, k, t){
   
   #### Iteration functions
   
-  while(label2 != label1){
+  while(sum(label1 != label2) > n/40){
     label1 <- label2
     #### E step
     for(i in 1:n){
@@ -51,9 +51,9 @@ Train <- function(data.train, M, k, t){
         label2[i] <- j
         fobj <- 0
         for(l in 1:n){
-          fobj <- fobj + D(data.train[i,],data.train[l,],A)*(l[i]!=l[l])*w*m.matrix[i,l]
+          fobj <- fobj + D(data.train[i,],data.train[l,],A)*(label2[i]!=label2[l])*w*(m.matrix[i,l] >0)
         }
-        iter.value[j] <- fobj + D(x[i,],y[j,],A)
+        iter.value[j] <- fobj + D(data.train[i,],y[j,],A)
       }
       label2[i] <- which.min(iter.value)
     }
