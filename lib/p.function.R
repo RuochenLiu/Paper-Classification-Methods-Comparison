@@ -13,6 +13,9 @@ read.data <- function(input) {
   return(df)
 }
 
+#transpose list into data frame
+
+
 # decompose a string into words
 dec <- function(z) {
   return(strsplit(z, split = " "))
@@ -86,4 +89,3 @@ p.journal <- function(df, total_df) {
   row.names(output) <- c("p.title.seen", "p.title.unseen", names(dic), "p.word.unseen", "prior.author")
   return(output)
 }
-
