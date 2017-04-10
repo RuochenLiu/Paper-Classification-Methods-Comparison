@@ -21,6 +21,7 @@ output: html_document
 
 ```{r}
 require("pacman")
+pacman::p_load(text2vec, dplyr, qlcMatrix, kernlab, knitr)
 source("../lib/M.R")
 load("../output/CleanData.RData")
 load("../output/M.RData")
@@ -38,7 +39,6 @@ for(i in 1:n){
 it_train <- itoken(paper, 
              preprocessor = tolower, 
              tokenizer = word_tokenizer,
-             # turn off progressbar because it won't look nice in rmd
              progressbar = FALSE)
 vocab <- create_vocabulary(it_train, stopwords = c("a", "an", "the", "in", "on",
                                                    "at", "of", "above", "under"))
@@ -46,8 +46,9 @@ vectorizer <- vocab_vectorizer(vocab)
 dtm_train <- create_dtm(it_train, vectorizer)
 dim(dtm_train)
 tfidf <- TfIdf$new()
-train.data <- as.matrix(fit_transform(dtm_train, tfidf))
-
+train.data <- as.matrix(fit_transform(dtm_train, tfidf)) #### Get train data features.
+# d <- train.data
+t <- 3
 label <- vector("numeric", length = n) #### Save true assignments.
 for(i in 1:n){
   label[i] <- d[[i]][[1]]
