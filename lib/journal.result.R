@@ -8,39 +8,20 @@ library("tm")
 
 setwd("~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/output")
 attach("CleanData.RData")
-
-
-
-
-
-
-
-
-
-
-
-
-
 data.lib <- "~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/data/nameset"
 data.files <- list.files(path = data.lib, "*.txt")
-AKumar <- read.data(data.files[2])
 
-
-
-
-
-final <- numeric(length(data.files))
-for (zzz in 1:length(data.files)) {
-  df <- read.data(data.files[zzz])
-  acc <- numeric(10)
-  for(zz in 1:10) {
-    acc[zz] <- test(df)
+final <- matrix(NA, nrow = 10, ncol = length(data.files))
+for (j in 1:length(data.files)) {
+  df <- trans.data(j)
+  for(i in 1:10) {
+    final[i, j] <- acc.test(df)
   }
-  final[zzz] <- mean(acc)
 }
-final
+acc.mean <- apply(final, 2, mean)
+acc.mean
+mean(apply(final, 2, mean))
 
-
-
-
+output <- rbind(final, acc.mean)
+write.csv(output, file = "Journal.accuracy.result.csv")
 

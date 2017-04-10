@@ -1,4 +1,4 @@
-test <- function(df) {
+acc.test <- function(df) {
   # split data
   index <- split_data(df)
   train <- df[index, ]
@@ -19,3 +19,4 @@ test <- function(df) {
   output <- mean(as.numeric(result.class) == test$clusterid)
   return(output)
 }
+

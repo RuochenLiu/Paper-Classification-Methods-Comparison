@@ -14,7 +14,17 @@ read.data <- function(input) {
 }
 
 #transpose list into data frame
-
+trans.data <- function(j) {
+  ori.data <- data_list[[j]]
+  output <- data.frame(matrix(NA, nrow = length(ori.data), ncol = 3))
+  colnames(output) <- c("Paper", "Journal", "clusterid")
+  for (i in 1:length(ori.data)) {
+    output$Paper[i] <- ori.data[[i]][[4]]
+    output$Journal[i] <- ori.data[[i]][[5]]
+    output$clusterid[i] <- ori.data[[i]][[1]]
+  }
+  return(output)
+}
 
 # decompose a string into words
 dec <- function(z) {
@@ -75,9 +85,9 @@ split_data <- function(df){
 # train function
 p.journal <- function(df, total_df) {
   # the total word dictionary
-  dic <- word.infor(total_df)
-  n.all <<- sum(dic)
-  dic <<- names(dic)
+  dic.all <- word.infor(total_df)
+  n.all <<- sum(dic.all)
+  dic <<- names(dic.all)
   author <<- sort(unique(total_df$clusterid))
   K <<- length(author)
   L <<- length(dic)
@@ -86,6 +96,6 @@ p.journal <- function(df, total_df) {
   prior.author <- table(df$clusterid) / length(df$clusterid)
   output <- rbind(prior.dic, prior.author)
   colnames(output) <- author
-  row.names(output) <- c("p.title.seen", "p.title.unseen", names(dic), "p.word.unseen", "prior.author")
+  row.names(output) <- c("p.title.seen", "p.title.unseen", dic, "p.word.unseen", "prior.author")
   return(output)
 }
