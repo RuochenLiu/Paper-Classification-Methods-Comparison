@@ -1,0 +1,392 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+#step0: load packages and specify directories
+```{r}
+
+
+```
+
+#step1: load and process data
+```{r}
+AKumar <- data.frame(scan("AKumar.txt",
+                          what = list(Coauthor = "", Paper = "", Journal = ""),
+                          sep=">", quiet=TRUE), stringsAsFactors=F)
+AKumar$clusterid <- sub("_.*","",AKumar$Coauthor)
+AKumar$citationid <- sub(".*_(\\w*)\\s.*", "\\1", AKumar$Coauthor)
+AKumar$coauthor <- gsub("<","",sub("^.*?\\s","", AKumar$Coauthor))
+AKumar$Paper <- gsub("<","",AKumar$Paper)
+AKumar$index <- rownames(AKumar)
+```
+
+```{r}
+###################################### J Smith #################################
+JSmith <- data.frame(scan("/Users/ouminamikun/Documents/Columbia/Spring 2017/ADS/Project 4/nameset/JSmith.txt",
+                          what = list(coauthor ="", paper = "", publication =""),
+                          sep = ">", quiet = T),stringsAsFactors = F)
+JSmith$authors <- gsub("<","",sub("^.*?\\s","", JSmith$coauthor))
+JSmith$clusterid <- sub("_.*","",JSmith$coauthor)
+```
+
+```{r}
+authors <- strsplit(JSmith$authors, ";")
+authors
+
+##authors name frequencies table
+freq_authors <- c(authors[[1]],authors[[2]])
+for(i in 3:length(authors)){
+   freq_authors<- c(freq_authors, authors[[i]])
+}
+freq_authors <- as.data.frame(sort(table(freq_authors)))
+colnames( freq_authors) <- c("authors", "frequencies")
+
+##number of authors for each citation
+num_authors <- NA
+for(i in 1:length(authors)){
+  num_authors[i] <- length(authors[[i]])
+}
+JSmith$num_authors <- num_authors
+
+clusterid_index <- unique(JSmith$clusterid)
+```
+
+
+```{r}
+##No.10 J Smith
+index <- JSmith$clusterid == clusterid_index[1]
+p_id10 <- mean(index)
+p_id10
+
+#the prob of Xi writing a futrue paper alone conditioned on the event of Xi
+p_N <- mean(JSmith$num_authors[index]==1)
+p_co <- 1-p_N
+```
+
+```{r}
+##authors name frequecies table
+freq_authors_id10 <- c(authors_id10[[1]],authors_id10[[2]])
+for(i in 3:length(authors_id10)){
+   freq_authors_id10 <- c(freq_authors_id10, authors_id10[[i]])
+}
+
+freq_authors_id10 <- as.data.frame(sort(table(freq_authors_id10)))
+colnames(freq_authors_id10) <- c("authors", "frequencies")
+
+#the prob of Xi writing a futre paper with previously seen coauthors condiitoned on the event that Xi writes a futre paper with coauthors
+authors_id10 <- authors[index]
+authors_id10
+sum(JSmith$num_authors[index] - 1) #total number of times Xi coauthors with any coauthor
+p_seen_co <- (sum(c_authors_id10$Freq >= 2) - 1) / sum(JSmith$num_authors[index] - 1)
+p_seen_co
+p_unseen_co <- 1 - p_seen_co
+
+```
+
+```{r}
+#the prob of Xi writing a future paper with a particular coauthor A1k conditioned on the event that X1 writes a paper with a previously seen coauthors
+p_A11_seen_co <- freq_authors_id10[freq_authors_id10$authors == "Terence C Fogarty", "frequencies"]/sum(JSmith$num_authors[index] - 1)
+p_A11_seen_co 
+p_A11_unseen_co <- 1/ (nrow(freq_authors) - (nrow(freq_authors_id10) - 1))
+```
+
+```{r}
+p_A11 <- p_A11_seen_co*p_seen_co*p_co + p_A11_unseen_co*p_unseen_co*p_co
+log(p_A11) + log(p_id10)
+
+```
+
+```{r}
+JSmith_features <- matrix(0, 225, 255)
+JSmith_features[,1] <- JSmith$clusterid
+
+
+
+for(i in 1:225){
+  j_ind <- matrix(0, nrow =length(authors[[i]]), ncol = 254)
+  for(j in 1:length(authors[[i]])){
+    j_ind[j,] <- authors[[i]][j] == freq_authors$authors
+  }
+  JSmith_features[,-1][i,] <- as.numeric(colSums(j_ind))
+}
+
+which(JSmith_features[2,] == 1)
+JSmith_features_id <- unique(JSmith_features[,1])
+
+JSmith_features_id
+###########################################################################################################
+```
+
+#Construct coauthors matrix
+```{r}
+#here: load M and cleanData
+
+label <- function(data_list, num){
+  nameset <- data_list[[num]]
+  n <- length(nameset)
+  label <- NA
+  for(i in 1:n){
+    label[i] <- nameset[[i]][1]
+  }
+  
+  return(unlist(label))
+}
+
+labels <- NULL
+for(i in 1:14){
+  l <- label(data_list = data_list, num = i)
+  labels[[i]] <- l
+}
+
+coauthors <- NULL
+for(i in 1:14){
+  obs <- length(data_list[[i]])
+  d <- ncol(M[[i]])
+  labels[[i]] <- as.matrix(labels[[i]])
+  coauthors[[i]] <- cbind(labels[[i]],M[[i]][1:obs, (obs+1) : d])
+  coauthors[[i]] <- cbind(coauthors[[i]], rep(1,obs))
+}
+```
+
+#split data function
+```{r}
+
+split_data <- function(m){
+    #input m = one class of one nameset
+    #output = train and test data for that class
+  
+    obs <- nrow(m)
+    index <- sample(1:obs,round(obs/2))
+    train_data <- m[index,]
+    test_data <- m[-index,]
+    return(list(train_data = train_data, test_data = test_data))
+}
+```
+
+#Split all nameset data into train and test data for 10 times and store them as cvs files
+```{r}
+#DON'T RUN THIS AGAIN!!!
+
+###split every class in a nameset and for loop 14 namesets
+s <- NULL
+ss <- NULL
+for(i in 1:14){
+  s[[i]] <- split(as.data.frame(coauthors[[i]]), coauthors[[i]][,1])
+  ss[[i]] <- lapply(s[[i]], split_data)
+}
+
+###combine train data of every class and for loop 14 namesets
+train <- NULL
+for(i in 1:14){
+  n <- length(ss[[i]])
+  train[[i]] <- ss[[i]][[1]]$train_data
+  for(j in 2:n){
+    train[[i]] <- rbind(train[[i]], ss[[i]][[j]]$train_data)
+  }
+}
+
+for(i in 1:14){
+  train_data_frame <- train[[i]]
+  file_name <- paste("train_",i,".csv" ,sep = "")
+  write.csv(train_data_frame, paste("/Users/ouminamikun/Documents/Columbia/Spring 2017/ADS/Spr2017-proj4-team-14/output/Exp10/", file_name,sep = ""), row.names = F)
+}
+
+
+###combine test data of every class and for loop 14 namesets
+test <- NULL
+for(i in 1:14){
+  n <- length(ss[[i]])
+  test[[i]] <- ss[[i]][[1]]$test_data
+  for(j in 2:n){
+    test[[i]] <- rbind(test[[i]], ss[[i]][[j]]$test_data)
+  }
+}
+
+for(i in 1:14){
+  test_data_frame <- test[[i]]
+  file_name <- paste("test_",i,".csv" ,sep = "")
+  write.csv(test_data_frame, paste("/Users/ouminamikun/Documents/Columbia/Spring 2017/ADS/Spr2017-proj4-team-14/output/Exp10/", file_name,sep = ""), row.names = F)
+}
+```
+
+#train function
+```{r}
+nb_train <- function(train_x, train_y){
+  
+  d <- ncol(train_x)
+  id <- unique(train_y)
+  k <- length(id)
+  P_No <- NA
+  P_Co <- NA
+  co_times <- matrix(NA, nrow = k, ncol = d)
+    
+  for(i in 1:k){
+    ##prob of writing without coauthors and with ones
+    row_sum <- rowSums(train_x)
+    index <- train_y == id[i]
+    row_sum_id <- row_sum[index]
+    No_ind <- row_sum_id == 1
+    P_No[i] <- mean(No_ind)
+    P_Co[i] <- 1 - P_No[i]
+    
+    ##prob of wrting witho seen coauthors and without ones
+    train_x_id <- train_x[index,]
+    dimension <- ifelse(is.matrix(train_x_id), 2, 1)
+    if(dimension == 1){
+      co_times[i,] <- train_x_id
+    }
+    else if(dimension == 2){
+      co_times[i,] <- colSums(train_x_id)
+    }
+  }
+  co_times_omt<- co_times[, -d]
+  seen_times <- apply(co_times_omt, 1, function(x){sum(x[x >= 2])})
+  total_times <- rowSums(co_times_omt)
+  P_Seen_Co <- seen_times / total_times
+  P_Unseen_Co <- 1 - P_Seen_Co
+  
+  ##
+  P_A1k_Seen_Co <- prop.table(co_times_omt, 1)
+  P_A1k_Unseen_Co <- 1 / (sum(co_times_omt) - rowSums(co_times_omt))
+  
+  ##
+  prop <- prop.table(co_times, 2)
+  Prior <- prop[,d]
+    
+  return(list(Prior = Prior,
+              P_No = P_No,
+              P_Co = P_Co, 
+              P_Seen_Co = P_Seen_Co, 
+              P_Unseen_Co = P_Unseen_Co,
+              P_A1k_Seen_Co = P_A1k_Seen_Co,
+              P_A1k_Unseen_Co = P_A1k_Unseen_Co))
+}
+
+
+train_x <- as.matrix(train_1[,-1])
+train_y <- train_1[,1]
+model <- nb_train(train_x = train_x, train_y = train_y)
+model
+```
+
+#test function
+```{r}
+nb_test <- function(model, test_data){
+  
+  n <- dim(test_data)[1]
+  d <- dim(test_data)[2]
+  test_data_omt <- test_data[,-d]
+  K <- rowSums(test_data_omt)
+  n_id <- length(model$Prior)
+  posterior <- matrix(NA, nrow = n, ncol = n_id)
+  class <- NA
+  
+  for(i in 1:n){
+      N <- K[i]
+      name_ind <- test_data_omt[i,] == 1
+      for(j in 1:n_id){
+        if(N == 0){
+          posterior[i,j] <- model$P_No[j] * model$Prior[j]
+        }
+        else if(N >= 1){
+          posterior[i,j] <- prod( model$P_A1k_Seen_Co[j, name_ind] * model$P_Seen_Co[j] * model$P_Co[j] +   rep(model$P_A1k_Unseen_Co[j], sum(name_ind)) * model$P_Unseen_Co[j] * model$P_Co[j]) * model$Prior[j]
+        }
+      }
+      class[i] <- which.max(posterior[i,])
+  }
+  return(prediction = class)
+} 
+
+pp <- nb_test(model = model, test_data = test_1[,-1])
+mean(pp == test_1[,1])
+```
+
+#read train and test files function:
+```{r}
+read_files <- function(num_nameset){
+  
+  #input: which nameset to read (indicated by number)
+  #output: 10 experiments train and test data set for that nameset
+  
+  trainset <- paste("/train_", num_nameset, ".csv", sep = "")
+  testser <- paste("/test_", num_nameset, ".csv", sep = "")
+  
+  train_files <- NULL
+  for(i in 1:10){
+    file_dir <- paste("/Users/ouminamikun/Documents/Columbia/Spring 2017/ADS/Spr2017-proj4-team-14/output/Exp",i,trainset,sep = "")
+    train_files[[i]] <- read.csv(file_dir, header = T)
+  }
+
+  test_files <- NULL
+  for(i in 1:10){
+    file_dir <- paste("/Users/ouminamikun/Documents/Columbia/Spring 2017/ADS/Spr2017-proj4-team-14/output/Exp",i,trainset,sep = "")
+    test_files[[i]] <- read.csv(file_dir, header = T)
+  }
+  return(list(train_files = train_files,test_files = test_files))
+}
+```
+
+#experiments function
+```{r}
+experiment <- function(train_files, test_files){
+  
+  #input: 10 experiments train sets and test sets of one nameset
+  #output: the mean and standard deviation of accuracy
+  
+  model <- NULL
+  prediction <- NULL
+  accuracy <- NA
+  for(i in 1:10){
+    train_x <- as.matrix(train_files[[i]][,-1])
+    train_y <- train_files[[i]][,1]
+    model[[i]] <- nb_train(train_x, train_y)
+    prediction[[i]] <- nb_test(model[[i]], test_files[[i]][,-1])
+    accuracy[i] <- mean(prediction[[i]] == test_files[[i]][,1])
+  }
+  return(list(mean = mean(accuracy), StdDev = sd(accuracy)))
+}
+```
+
+#conduct 10 experiments on the first nameset
+```{r}
+
+train_files <- NULL
+for(i in 1:10){
+  file_dir <- paste("/Users/ouminamikun/Documents/Columbia/Spring 2017/ADS/Spr2017-proj4-team-14/output/Exp",i,"/train_1.csv",sep = "")
+  train_files[[i]] <- read.csv(file_dir, header = T)
+}
+
+test_files <- NULL
+for(i in 1:10){
+  file_dir <- paste("/Users/ouminamikun/Documents/Columbia/Spring 2017/ADS/Spr2017-proj4-team-14/output/Exp",i,"/test_1.csv",sep = "")
+  test_files[[i]] <- read.csv(file_dir, header = T)
+}
+
+model <- NULL
+prediction <- NULL
+accuracy <- NA
+for(i in 1:10){
+  train_x <- as.matrix(train_files[[i]][,-1])
+  train_y <- train_files[[i]][,1]
+  model[[i]] <- nb_train(train_x, train_y)
+  prediction[[i]] <- nb_test(model[[i]], test_files[[i]][,-1])
+  accuracy[i] <- mean(prediction[[i]] == test_files[[i]][,1])
+}
+mean(accuracy)
+sd(accuracy)
+```
+#conduct 10 experiments for all namesets
+```{r}
+accuracy_table <- matrix(NA,2,14)
+for(i in 1:14){
+  nameset <- read_files(i)
+  result <- experiment(nameset$train_files, nameset$test_files)
+  accuracy_table[1,i] <- result$mean
+  accuracy_table[2,i] <- result$StdDev
+}
+
+write.csv(accuracy_table, "accuracy_table.csv")
+```
+
+
