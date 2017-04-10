@@ -1,10 +1,10 @@
-acc.test <- function(df) {
+acc.test <- function(df, j_p) {
   # split data
   index <- split_data(df)
   train <- df[index, ]
   test <- df[-index, ]
   # train result
-  ak.train <- p.journal(train, df)
+  ak.train <- p.journal(train, df, j_p = j_p)
   # calculate posterior probability for each author
   post.p <- matrix(NA, nrow = nrow(test), ncol = K)
   for (k in 1:nrow(test)) {

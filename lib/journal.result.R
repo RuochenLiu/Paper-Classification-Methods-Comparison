@@ -5,23 +5,36 @@
 library("NLP")
 library("tm")
 
-
 setwd("~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/output")
 attach("CleanData.RData")
-data.lib <- "~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/data/nameset"
-data.files <- list.files(path = data.lib, "*.txt")
+setwd("~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/lib")
+source("p.function.R", local = T)
+source("title.test.R", local = T)
 
-final <- matrix(NA, nrow = 10, ncol = length(data.files))
-for (j in 1:length(data.files)) {
+# journal title
+final.j <- matrix(NA, nrow = 10, ncol = 14)
+for (j in 1:14) {
   df <- trans.data(j)
   for(i in 1:10) {
-    final[i, j] <- acc.test(df)
+    final.j[i, j] <- acc.test(df, "j")
   }
 }
-acc.mean <- apply(final, 2, mean)
-acc.mean
-mean(apply(final, 2, mean))
+acc.mean.j <- apply(final.j, 2, mean)
+acc.mean.j
+mean(acc.mean.j)
+output.j <- rbind(final.j, acc.mean.j)
+write.csv(output.j, file = "Journal.accuracy.result.csv")
 
-output <- rbind(final, acc.mean)
-write.csv(output, file = "Journal.accuracy.result.csv")
-
+# paper title
+final.p <- matrix(NA, nrow = 10, ncol = 14)
+for (j in 1:14) {
+  df <- trans.data(j)
+  for(i in 1:10) {
+    final.p[i, j] <- acc.test(df, "p")
+  }
+}
+acc.mean.p <- apply(final.p, 2, mean)
+acc.mean.p
+mean(acc.mean.p)
+output.p <- rbind(final.p, acc.mean.p)
+write.csv(output.p, file = "Paper.accuracy.result.csv")

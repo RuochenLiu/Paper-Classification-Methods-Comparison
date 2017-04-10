@@ -32,8 +32,9 @@ dec <- function(z) {
 }
 
 # count word frequency and sort
-word.infor <- function(df) {
-  dic <- Corpus(VectorSource(df$Journal))
+word.infor <- function(df, j_p = "j") {
+  if (j_p == "j") { dic <- Corpus(VectorSource(df$Journal)) }
+  else { dic <- Corpus(VectorSource(df$Paper)) }
   dic <- tm_map(dic, content_transformer(tolower))
   dic <- tm_map(dic, removePunctuation)
   dic <- tm_map(dic, removeWords, stopwords("english"))
@@ -55,9 +56,9 @@ find_loc <- function(input) {
 }
 
 # prior probability to each author in dataset
-prior.author.p <- function(j, df) {
+prior.author.p <- function(j, df, j_p) {
   subdata <- subset(df, clusterid == author[j])
-  subdic <- word.infor(subdata)
+  subdic <- word.infor(subdata, j_p = j_p)
   # probability of the author publish a paper on a journal with a seen word in the journal title
   p.title.seen <- sum(subdic[subdic >= 2]) / sum(subdic)
   # probability of the author publish a paper on a journal with a unseen word in the journal title
@@ -83,7 +84,7 @@ split_data <- function(df){
 }
 
 # train function
-p.journal <- function(df, total_df) {
+p.journal <- function(df, total_df, j_p) {
   # the total word dictionary
   dic.all <- word.infor(total_df)
   n.all <<- sum(dic.all)
@@ -92,7 +93,7 @@ p.journal <- function(df, total_df) {
   K <<- length(author)
   L <<- length(dic)
   q <- matrix(1:K, ncol = 1)
-  prior.dic <- apply(q, 1, prior.author.p, df)
+  prior.dic <- apply(q, 1, prior.author.p, df, j_p = j_p)
   prior.author <- table(df$clusterid) / length(df$clusterid)
   output <- rbind(prior.dic, prior.author)
   colnames(output) <- author
