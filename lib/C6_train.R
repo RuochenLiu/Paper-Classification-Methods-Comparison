@@ -54,7 +54,15 @@ Train <- function(data.train, M, k, t){
   #### Initialize y values
   
   for(i in 1:k){
-    y[i,] <- apply(data.train[(label2 == i),], 2, sum)/sum(label2 == i)
+    if(sum(label2 == i) > 1){
+      y[i,] <- apply(data.train[(label2 == i),], 2, sum)/sum(label2 == i)
+    }
+    else if(sum(label2 == i) == 1){
+      y[i,] <- data.train[(label2 == i),]
+    }
+    else{
+      y[i,] <- rep(0,p)
+    }
   }
   
   #### Initialize A matirx
@@ -67,7 +75,7 @@ Train <- function(data.train, M, k, t){
     label1 <- label2
     #### E step
     for(i in 1:n){
-      iter.value <- vector("numeric", k)
+      iter.value <- rep(0,k)
       for(j in 1:k){
         label2[i] <- j
         fobj <- 0
@@ -81,13 +89,29 @@ Train <- function(data.train, M, k, t){
     #### M step
     #### Update y
     for(i in 1:k){
-      y[i,] <- apply(data.train[(label2 == i),], 2, sum)/sum(label2 == i)
+      if(sum(label2 == i) > 1){
+        y[i,] <- apply(data.train[(label2 == i),], 2, sum)/sum(label2 == i)
+      }
+      if(sum(label2 == i) == 1){
+        y[i,] <- data.train[(label2 == i),]
+      }
+      if(sum(label2 == i) == 0){
+        y[i,] <- rep(0,f)
+      }
     }
     #### Update A matrix
     delta <- rep(0,f)
     part1 <- matrix(nrow = n, ncol = f)
     for(i in 1:n){
-      xa <- apply(data.train[label2 == label2[i], ], 2, sum)
+      if(sum(label2 == label2[i]) > 1){
+        xa <- apply(data.train[label2 == label2[i], ], 2, sum)
+      }
+      if(sum(label2 == label2[i]) == 1){
+        xa <- data.train[label2 == label2[i], ]
+      }
+      if(sum(label2 == label2[i]) == 0){
+        xa <- rep(0,f)
+      }
       part1[i,] <- gradient(data.train[i,], y[label2[i],]*sqrt(t(xa) %*% A %*% xa), A)
     }
     part1 <- colSums(part1)

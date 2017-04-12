@@ -26,6 +26,7 @@ source("../lib/M.R")
 load("../output/CleanData.RData")
 load("../output/M.RData")
 source("../lib/C6_train.R")
+source('../lib/evaluation_measures.R')
 #### Get Features
 
 d <- data_list[[10]]
@@ -56,10 +57,10 @@ for(i in 1:n){
 k <- length(unique(label)) #### Number of clusters.
 
 #### Train
-
-
 train_label <- Train(train.data, M, k, t)
-
+#### Result
+matching_matrix_hclust <- matching_matrix(label,train_label)
+performance_hclust <- performance_statistics(label,train_label)
 
 
 ```
