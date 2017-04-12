@@ -125,7 +125,7 @@ Train <- function(data.train, M, k, t){
     }
     delta <- part1 + part2
     for(i in 1:f){
-      A[i,i] <- A[i,i] + 0.5*delta[i]
+      A[i,i] <- A[i,i] + 0.005*delta[i]
     }
     
   }
