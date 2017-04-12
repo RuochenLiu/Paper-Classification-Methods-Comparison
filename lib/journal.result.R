@@ -5,8 +5,9 @@
 library("NLP")
 library("tm")
 
-setwd("~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/output")
-attach("CleanData.RData")
+# path <- "~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/"
+# setwd("~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/output")
+attach("~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/output/CleanData.RData")
 source("~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/lib/p.function.R", local = T)
 source("~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/lib/title.test.R", local = T)
 
