@@ -71,7 +71,7 @@ Train <- function(data.train, M, k, t){
   
   #### Iteration functions
   
-  while(sum(label1 != label2) > n/40){
+  while(label1 != label2){
     label1 <- label2
     #### E step
     for(i in 1:n){

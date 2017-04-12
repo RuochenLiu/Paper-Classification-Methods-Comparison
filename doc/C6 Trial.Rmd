@@ -59,8 +59,8 @@ k <- length(unique(label)) #### Number of clusters.
 #### Train
 train_label <- Train(train.data, M, k, t)
 #### Result
-matching_matrix_hclust <- matching_matrix(label,train_label)
-performance_hclust <- performance_statistics(label,train_label)
+matching_matrix_c6 <- matching_matrix(label,train_label)
+performance_c6 <- performance_statistics(matching_matrix_c6)
 
 
 ```
