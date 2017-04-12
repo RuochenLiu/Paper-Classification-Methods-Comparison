@@ -47,7 +47,7 @@ Train <- function(data.train, M, k, t){
   
   #### Initial assignments (l1)
   
-  while(length(table(label2)) != k){
+  while(length(table(label2)) > n/50){
     label2 <- sample(1:k, n, replace =  TRUE)
   }
   
@@ -125,7 +125,7 @@ Train <- function(data.train, M, k, t){
     }
     delta <- part1 + part2
     for(i in 1:f){
-      A[i,i] <- A[i,i] + 0.005*delta[i]
+      A[i,i] <- A[i,i] + 0.001*delta[i]
     }
     
   }
