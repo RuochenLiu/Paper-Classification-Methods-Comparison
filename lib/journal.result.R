@@ -7,9 +7,8 @@ library("tm")
 
 setwd("~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/output")
 attach("CleanData.RData")
-setwd("~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/lib")
-source("p.function.R", local = T)
-source("title.test.R", local = T)
+source("~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/lib/p.function.R", local = T)
+source("~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/lib/title.test.R", local = T)
 
 # journal title
 final.j <- matrix(NA, nrow = 10, ncol = 14)
