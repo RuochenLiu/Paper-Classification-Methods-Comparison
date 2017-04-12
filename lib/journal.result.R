@@ -21,8 +21,13 @@ for (j in 1:14) {
 }
 acc.mean.j <- apply(final.j, 2, mean)
 acc.mean.j
+acc.sd.j <- apply(final.j, 2, sd)
+acc.sd.j
 mean(acc.mean.j)
-output.j <- rbind(final.j, acc.mean.j)
+sd(acc.mean.j)
+mean(acc.sd.j)
+sd(acc.sd.j)
+output.j <- rbind(final.j, acc.mean.j, acc.sd.j)
 write.csv(output.j, file = "Journal.accuracy.result.csv")
 
 # paper title
@@ -35,6 +40,11 @@ for (j in 1:14) {
 }
 acc.mean.p <- apply(final.p, 2, mean)
 acc.mean.p
+acc.sd.p <- apply(final.p, 2, sd)
+acc.sd.p
 mean(acc.mean.p)
-output.p <- rbind(final.p, acc.mean.p)
+sd(acc.mean.p)
+mean(acc.sd.p)
+sd(acc.sd.p  )
+output.p <- rbind(final.p, acc.mean.p, acc.sd.p)
 write.csv(output.p, file = "Paper.accuracy.result.csv")
