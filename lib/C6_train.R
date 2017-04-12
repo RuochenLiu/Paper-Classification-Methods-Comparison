@@ -71,7 +71,7 @@ Train <- function(data.train, M, k, t){
   
   #### Iteration functions
   
-  while(label1 != label2){
+  while(sum(label1 != label2) > n/100){
     label1 <- label2
     #### E step
     for(i in 1:n){
