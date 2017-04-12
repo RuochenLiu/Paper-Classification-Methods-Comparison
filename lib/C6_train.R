@@ -5,6 +5,7 @@ Train <- function(data.train, M, k, t){
   #### Initialization
   
   n <- nrow(data.train) #### Number of publications
+  f <- ncol(data.train) #### Number of features
   m.matrix <- M
   for(i in 1:t){
     m.matrix <- m.matrix%*%M
@@ -13,8 +14,8 @@ Train <- function(data.train, M, k, t){
   w <- 0.7^t
   label2 <- vector("numeric", n) #### Store train_labels
   label1 <- vector("numeric", n) #### For comparison
-  y <- matrix(0, nrow = k, ncol = ncol(data.train))
-  A <- matrix(0, nrow = ncol(data.train), ncol = ncol(data.train))
+  y <- matrix(0, nrow = k, ncol = f)
+  A <- matrix(0, nrow = f, ncol = f)
   diag(A) <- rep(1,nrow(A))
   
   #### D function
@@ -24,11 +25,31 @@ Train <- function(data.train, M, k, t){
     return(s)
   }
   
+  #### A Norm
+  
+  Anorm <- function(xi,A){
+    return(sqrt(t(xi) %*% A %*% xi))
+  }
+  
+  #### Gradient function
+  
+  gradient <- function(xi,xj,A){
+    g <- vector("numeric", nrow(A))
+    for(i in 1:nrow(A)){
+      part1 <- xi[i]*xj[i]*Anorm(xi,A)*Anorm(xj,A)
+      part2 <- t(xi)%*%A%*%xj*((xi[i]^2)*(Anorm(xi,A)^2) + (xj[i]^2)*(Anorm(xj,A)^2))/2/Anorm(xi,A)/Anorm(xj,A)
+      part3 <- (Anorm(xi,A)^2)*(Anorm(xj,A)^2)
+      g[i] <- (part1 - part2)/part3
+    }
+    return(g)
+  }
+  
+  
   #### Initial assignments (l1)
   
-  label2 <- sample(1:k, n, replace =  TRUE)
-  
-  
+  while(length(table(label2)) != k){
+    label2 <- sample(1:k, n, replace =  TRUE)
+  }
   
   #### Initialize y values
   
@@ -63,8 +84,24 @@ Train <- function(data.train, M, k, t){
       y[i,] <- apply(data.train[(label2 == i),], 2, sum)/sum(label2 == i)
     }
     #### Update A matrix
-    for(i in 1:nrow(A)){
-      
+    delta <- rep(0,f)
+    part1 <- matrix(nrow = n, ncol = f)
+    for(i in 1:n){
+      xa <- apply(data.train[label2 == label2[i], ], 2, sum)
+      part1[i,] <- gradient(data.train[i,], y[label2[i],]*sqrt(t(xa) %*% A %*% xa), A)
+    }
+    part1 <- colSums(part1)
+    part2 <- rep(0,f)
+    for(i in 1:n){
+      for(j in 1:n){
+        if(m.matrix[i,j]>0 & label2[i] != label2[j]){
+          part2 <- part2 + gradient(data.train[i,], data.train[j,], A)
+        }
+      }
+    }
+    delta <- part1 + part2
+    for(i in 1:f){
+      A[i,i] <- A[i,i] + 0.5*delta[i]
     }
     
   }

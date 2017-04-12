@@ -25,11 +25,11 @@ pacman::p_load(text2vec, dplyr, qlcMatrix, kernlab, knitr)
 source("../lib/M.R")
 load("../output/CleanData.RData")
 load("../output/M.RData")
-
+source("../lib/C6_train.R")
 #### Get Features
 
-d <- data_list[[2]]
-M <- M.Matrix[[2]]
+d <- data_list[[10]]
+M <- M.Matrix[[10]]
 n <- length(d) #### Number of publications
 paper <- vector("character", length = n)
 for(i in 1:n){
@@ -47,7 +47,7 @@ dtm_train <- create_dtm(it_train, vectorizer)
 dim(dtm_train)
 tfidf <- TfIdf$new()
 train.data <- as.matrix(fit_transform(dtm_train, tfidf)) #### Get train data features.
-# data.train <- train.data
+data.train <- train.data
 t <- 3
 label <- vector("numeric", length = n) #### Save true assignments.
 for(i in 1:n){
@@ -58,7 +58,7 @@ k <- length(unique(label)) #### Number of clusters.
 #### Train
 
 
-
+train_label <- Train(train.data, M, k, t)
 
 
 
