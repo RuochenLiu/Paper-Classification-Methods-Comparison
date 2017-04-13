@@ -15,5 +15,5 @@ experiment <- function(train_files, test_files){
     prediction[[i]] <- nb_test(model[[i]], test_files[[i]][,-1])
     accuracy[i] <- mean(prediction[[i]] == test_files[[i]][,1])
   }
-  return(mean = mean(accuracy), StdDev = sd(accuracy))
+  return(list(mean = mean(accuracy), StdDev = sd(accuracy)))
 }
