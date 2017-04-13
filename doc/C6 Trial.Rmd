@@ -18,7 +18,8 @@ output: html_document
 #save(M.Matrix, file = "../output/M.RData")
 
 ```
-
+# Step 1.
+Use paper titles to design "TF-IDF" features for citations.
 ```{r}
 require("pacman")
 pacman::p_load(text2vec, dplyr, qlcMatrix, kernlab, knitr)
@@ -49,18 +50,25 @@ dim(dtm_train)
 tfidf <- TfIdf$new()
 train.data <- as.matrix(fit_transform(dtm_train, tfidf)) #### Get train data features.
 data.train <- train.data
-t <- 3
+```
+# Step 2.
+Save labels for comparison and choose t value for the number of extension coauthor. In Train function, we use EM methods to find optimal labels for each observation under given A and y matrix. Then use information from assignments to update A matrix and cluster centers. Continue until the improvement is not significant.
+```{r}
+t <- 5
 label <- vector("numeric", length = n) #### Save true assignments.
 for(i in 1:n){
   label[i] <- d[[i]][[1]]
 }
 k <- length(unique(label)) #### Number of clusters.
-
 #### Train
 train_label <- Train(train.data, M, k, t)
+```
+#Step 3.
+Confusion matrix for result.
+```{r}
 #### Result
 matching_matrix_c6 <- matching_matrix(label,train_label)
 performance_c6 <- performance_statistics(matching_matrix_c6)
-
+save(performance_c6, file = "../output/result_paper10_c6.RData")
 
 ```

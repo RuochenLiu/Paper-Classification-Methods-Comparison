@@ -47,7 +47,7 @@ Train <- function(data.train, M, k, t){
   
   #### Initial assignments (l1)
   
-  while(length(table(label2)) > n/50){
+  while(length(table(label2)) < k){
     label2 <- sample(1:k, n, replace =  TRUE)
   }
   
@@ -61,7 +61,7 @@ Train <- function(data.train, M, k, t){
       y[i,] <- data.train[(label2 == i),]
     }
     else{
-      y[i,] <- rep(0,p)
+      y[i,] <- rep(0,f)
     }
   }
   
@@ -71,7 +71,7 @@ Train <- function(data.train, M, k, t){
   
   #### Iteration functions
   
-  while(sum(label1 != label2) > 0){
+  while(sum(label1 != label2) > n/50){
     label1 <- label2
     #### E step
     for(i in 1:n){
