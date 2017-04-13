@@ -45,6 +45,6 @@ nb_train <- function(train_x, train_y){
               P_Seen_Co = P_Seen_Co, 
               P_Unseen_Co = P_Unseen_Co,
               P_A1k_Seen_Co = P_A1k_Seen_Co,
-              P_A1k_Unseen_Co = P_A1k_Unseen_Co,
-              mm = co_times_omt))
+              P_A1k_Unseen_Co = P_A1k_Unseen_Co
+              ))
 }
