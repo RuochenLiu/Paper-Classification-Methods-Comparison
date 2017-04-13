@@ -1,4 +1,8 @@
+##naive bayes train function##
+
 nb_train <- function(train_x, train_y){
+  
+  
   d <- ncol(train_x)
   id <- unique(train_y)
   k <- length(id)
@@ -7,7 +11,7 @@ nb_train <- function(train_x, train_y){
   co_times <- matrix(NA, nrow = k, ncol = d)
   
   for(i in 1:k){
-    ##
+    ##prob of writing without coauthors and with ones
     row_sum <- rowSums(train_x)
     index <- train_y == id[i]
     row_sum_id <- row_sum[index]
@@ -15,7 +19,7 @@ nb_train <- function(train_x, train_y){
     P_No[i] <- mean(No_ind)
     P_Co[i] <- 1 - P_No[i]
     
-    ##
+    ##prob of wrting witho seen coauthors and without ones
     train_x_id <- train_x[index,]
     dimension <- ifelse(is.matrix(train_x_id), 2, 1)
     if(dimension == 1){
