@@ -4,7 +4,13 @@ author: "Nanjun Wang"
 output:
   html_notebook:
     theme: readable
-    toc: yes
+    toc: TRUE
+    smart: TRUE
+    toc_depth: 3
+    toc_float: FALSE
+    fig_width : 7
+    fig_height: 5
+    fig_retina : 2
 ---
 
 ## Step 0: Load the packages, specify directories
@@ -90,7 +96,7 @@ for(i in 1:14){
 accuracy_table <- as.data.frame(accuracy_table)
 colnames(accuracy_table) <- c("AGupta","Akumar", "CCchen","DJohnson", "JLee","JMartin","JRobinson","JSmith","KTanaka","MBrown","MJones","MMiller","SLee","Ychen")
 rownames(accuracy_table) <- c("Mean", "StdDev")
-accuracy_table
+kable( accuracy_table, digits = 2)
 
 ```
 
@@ -107,5 +113,5 @@ compare_df <- data.frame(method="Coauthor",
                          f1=perfomance$f1,
                          accuracy=perfomance$accuracy)
 
-compare_df
+kable( compare_df, digits = 2)
 ```
