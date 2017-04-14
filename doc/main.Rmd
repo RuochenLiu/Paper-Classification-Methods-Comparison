@@ -1,7 +1,8 @@
----
-title: "Project 4 - Example Main Script"
-author: "Jing Wu, Tian Zheng"
-date: "3/22/2017"
+
+ ---
+title: "Project 4 - Main Script"
+author: "Ruochen Liu, Nanjun Wang, Boya Zhao, Chengcen Zhou"
+date: "4/13/2017"
 output: pdf_document
 ---
 
@@ -10,10 +11,10 @@ This file is currently a template for implementing one of the suggested papers, 
 ## Step 0: Load the packages, specify directories
 
 ```{r}
-if (!require("pacman")) install.packages("pacman")
-pacman::p_load(text2vec, dplyr, qlcMatrix, kernlab, knitr)
+if (!require(c("NLP", "tm"))) install.packages(c("NLP", "tm"))
 
-setwd("~/Dropbox/Project4_WhoIsWho/doc")
+
+setwd("~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14")
 # here replace it with your own path or manually set it in RStudio
 # to where this rmd file is located
 ```

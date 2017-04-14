@@ -100,3 +100,4 @@ p.journal <- function(df, total_df, j_p) {
   row.names(output) <- c("p.title.seen", "p.title.unseen", dic, "p.word.unseen", "prior.author")
   return(output)
 }
+
