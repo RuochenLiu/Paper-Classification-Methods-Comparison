@@ -1,0 +1,129 @@
+---
+title: "Project 4 - Main Script"
+author: "Ruochen Liu, Nanjun Wang, Boya Zhao, Chengcen Zhou"
+date: "4/13/2017"
+output: html_document
+---
+
+This file is trying to implemente one of the suggested papers, Han, Hui, et al. (2004). We use the prediction of "AGupta.txt" to compare inside paper. And then work on the whole dataset.
+
+## Step 0: Load the packages, specify directories
+
+```{r}
+# install.packages(c("NLP", "tm"))
+library("NLP")
+library("tm")
+library(knitr)
+setwd("~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/output")
+# here replace it with your own path or manually set it in RStudio
+# to where this rmd file is located
+```
+
+## Step 1: Load and process the data
+
+```{r}
+source('~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/lib/p.function.R', local = T)
+attach("~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/output/CleanData.RData")
+AGupta <- trans.data(1)
+```
+
+## Step 2: Feature design
+
+Following the section 2.2 in the paper, we want to use paper titles and journal titles to design features for citations. As the notation used in the paper, we want to find a $m$-dimensional citation vector $\alpha_i$ for each citation $i$, $i=1,...,n$. In this dataset, $n=$ `r nrow(AGupta)`. We study the Naive Bates method as suggested in the paper.
+
+The conditional probabilities we used in this method are as follows:
+
+\begin{aligned}
+\mbox{P}(A_{2k}|Seen, X_{i}) &= \frac{\mbox{Number of times that word $k$ appears in the title that belongs to $X_{i}$ }}{\mbox{Total number of words in the title that belongs to $X_{i}$}}\\
+\\
+\mbox{P}(Seen|X_{i}) &= \frac{\mbox{Total number of words that appears more than twice in the title that belongs to $X_{i}$ }}{\mbox{Total number of words in the title that belongs to $X_{i}$}}\\
+\\
+\mbox{P}(A_{2k}|Unseen, X_{i}) &= \frac{1}{\mbox{Total number of words in the title} - \mbox{Total number of words in the title that belongs to $X_{i}$}}\\
+\\
+\mbox{P}(Unseen|X_{i}) &= \frac{\mbox{Total number of words that appears only once in the title that belongs to $X_{i}$}}{\mbox{Total number of words in the title that belongs to $X_{i}$}}\\
+&= 1-\mbox{P}(A_{2k}|Seen, X_{i})\\
+\\
+\mbox{P}(A_{2}|X_{i} &= \mbox{P}(A_{21}|X_{i})\dots\mbox{P}(A_{2k}|X_{i})\dots\mbox{P}(A_{2K}|X_{i})\\
+\mbox{where}\\
+\mbox{P}(A_{2k}|X_{i}) &= \mbox{P}(A_{2k}, Seen|X_{i}) + \mbox{P}(A_{2k}, Unseen|X_{i})\\
+&= \mbox{P}(A_{2k}|Seen, X_{i}) \times \mbox{P}(Seen|X_{i}) + \mbox{P}(A_{2k}|Unseen, X_{i}) \times \mbox{P}(Unseen|X_{i})
+\end{aligned}
+
+We first create a vocabulary. Here we collect unique words from all titles in the document， then we remove pre-defined stopwords, the words like “a”, “the”, “in”, “I”, “you”, “on”, etc, which do not provide much useful information. Thus, we get the vocabulary list with frequency.
+
+```{r}
+# the vocabulary list for journal title with frequency
+Dic.j <- word.infor(AGupta, "j")
+# the vocabulary list for paper title with frequency
+Dic.p <- word.infor(AGupta, "p")
+```
+
+Saperate data for training and testing.
+
+```{r}
+index <- read.csv("~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/output/random_agupta.csv")
+index <- index$x
+train <- AGupta[index, ]
+test <- AGupta[-index, ]
+```
+
+## Step 3: Clustering
+
+Following suggestion in the paper, we use conditional probability to calculate posterior parobability for journal title for each observation, and choose the cluster that maximaize the posterior parobability.
+
+```{r}
+source('~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/lib/title.test.R', local = T)
+result.class.j <- test.result(index, AGupta, "j")
+acc.j <- mean(as.numeric(result.class.j) == test$clusterid)
+time.journal <- system.time(test.result(index, AGupta, "j"))
+```
+
+We can also calculate posterior parobability for paper title for each observation, and choose the cluster that maximaize the posterior parobability.
+
+```{r}
+result.class.p <- test.result(index, AGupta, "p")
+acc.p <- mean(as.numeric(result.class.p) == test$clusterid)
+time.paper <- system.time(test.result(index, AGupta, "p"))
+```
+
+## Step 4: Evaluation
+
+To evaluate the performance of the method, it is required to calculate the degree of agreement between a set of system-output partitions and a set of true partitions. In general, the agreement between two partitioins is measured for a pair of entities within partitions. The basic unit for which pair-wise agreement is assessed is a pair of entities (authors in our case) which belongs to one of the four cells in the following table (Kang et at.(2009)):
+
+\includegraphics[width=500pt]{matching_matrix.png}
+
+Let $M$ be the set of machine-generated clusters, and $G$ the set of gold standard clusters. Then. in the table, for example, $a$ is the number of pairs of entities that are assigned to the same cluster in each of $M$ and $G$. Hence, $a$ and $d$ are interpreted as agreements, and $b$ and $c$ disagreements. When the table is considered as a confusion matrix for a two-class prediction problem, the standard "Precision", "Recall","F1", and "Accuracy" are defined as follows.
+
+$$
+\begin{aligned}
+\mbox{Precision} &=\frac{a}{a+b}\\
+\mbox{Recall}&=\frac{a}{a+c}\\
+\mbox{F1} &=\frac{2\times\mbox{Precision}\times\mbox{Recall}}{\mbox{Precision}+\mbox{Recall}}\\
+\mbox{Accuracy}&=\frac{a+d}{a+b+c+d}
+\end{aligned}
+$$
+
+```{r}
+source('~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/lib/evaluation_measures.R', local = T)
+source('~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/lib/test_result.R', local = T)
+
+# result from nanjun
+result.class.c <- read.csv("coauthor_pred.csv")
+result.class.c <- result.class.c$x
+
+matching_matrix_coauthor <- matching_matrix(as.numeric(df$clusterid[-index]), result.class.c)
+performance_coauthor <- performance_statistics(matching_matrix_coauthor)
+matching_matrix_journal <- matching_matrix(as.numeric(df$clusterid[-index]),result.class.j)
+performance_journal <- performance_statistics(matching_matrix_journal)
+matching_matrix_paper <- matching_matrix(as.numeric(df$clusterid[-index]), result.class.p)
+performance_paper <- performance_statistics(matching_matrix_paper)
+time.coauthor <- 3.1
+compare_df <- data.frame(method = c("coauthor", "paper", "journal"),
+                         precision = c(performance_coauthor$precision, performance_paper$precision, performance_journal$precision),
+                         recall = c(performance_coauthor$recall, performance_paper$recall, performance_journal$recall),
+                         f1 = c(performance_coauthor$f1, performance_paper$f1, performance_journal$f1),
+                         accuracy = c(performance_coauthor$accuracy, performance_paper$accuracy, performance_journal$accuracy),
+                         time = c(time.coauthor, time.paper[3], time.journal[3]))
+kable(compare_df,caption = "Comparision of performance for two clustering methods", digits = 2)
+```
+
