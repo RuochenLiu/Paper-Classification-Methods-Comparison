@@ -10,13 +10,13 @@ read_files <- function(num_nameset){
   
   train_files <- NULL
   for(i in 1:10){
-    file_dir <- paste("/Users/ouminamikun/Documents/Columbia/Spring 2017/ADS/Spr2017-proj4-team-14/output/Exp",i,trainset,sep = "")
+    file_dir <- paste("~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/output/Exp",i,trainset,sep = "")
     train_files[[i]] <- read.csv(file_dir, header = T)
   }
   
   test_files <- NULL
   for(i in 1:10){
-    file_dir <- paste("/Users/ouminamikun/Documents/Columbia/Spring 2017/ADS/Spr2017-proj4-team-14/output/Exp",i,trainset,sep = "")
+    file_dir <- paste("~/Desktop/sem 2/Applied data science/Spr2017-proj4-team-14/output/Exp",i,trainset,sep = "")
     test_files[[i]] <- read.csv(file_dir, header = T)
   }
   return(list(train_files = train_files,test_files = test_files))
